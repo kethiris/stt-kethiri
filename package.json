@@ -17,5 +17,10 @@
   "bugs": {
     "url": "https://github.com/kth012/stt-kethiri/issues"
   },
-  "homepage": "https://github.com/kth012/stt-kethiri#readme"
+  "homepage": "https://github.com/kth012/stt-kethiri#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "formidable": "^1.2.2",
+    "mv": "^2.1.1"
+  }
 }
