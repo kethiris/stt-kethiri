@@ -12,36 +12,69 @@ const resourcepath = path.join(__dirname, 'resources');
 fs.mkdirSync(resourcepath, { recursive: true });
 
 // render the file upload form
-router.get('/',(req,res) => {
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.write('<form action="fileupload" method="post" enctype="multipart/form-data">');
-    res.write('<input type="file" name="filetoupload"><br>');
-    res.write('<input type="submit">');
-    res.write('</form>');
-    return res.end();
+router.get('/', (req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/html' });
+  res.write('<form action="fileupload" method="post" enctype="multipart/form-data">');
+  res.write('<input type="file" name="filetoupload"><br>');
+  res.write('<input type="submit">');
+  res.write('</form>');
+  return res.end();
 });
 
-// process the fileupload form action
-router.post('/fileupload',(req,res) => {
+// parse the upload form
+router.post('/fileupload', (req, res, next) => {
   var form = new formidable.IncomingForm();
   form.parse(req, function (err, fields, files) {
-    var oldpath = files.filetoupload.path;
-    var newpath = path.join(resourcepath, files.filetoupload.name);
-    console.log(`A new file is uploaded and saved in ${newpath}`);
-    mv(oldpath, newpath, function (err) {
-      if (err) next(err);
-      res.write('Your file is uploaded and being processed!');
-      res.end();
-    });
+    if (err) next(err);
+    processFile(files, res, next);
   });
 });
 
 // redirect to root route in case if invalid route
-router.get('/*',(req,res) => {
+router.get('/*', (req, res) => {
   res.redirect('/');
 })
 
 app.use('/', router);
-app.listen(process.env.PORT || 8080 ,() => {
+app.listen(process.env.PORT || 8080, () => {
   console.log(`Server started on ${process.env.PORT}`);
 })
+
+// 
+function processFile(files, res, next) {
+  res.header("Content-Type", 'application/json');
+  var jsonResponse = {
+    inputfile: null,
+    status: null,
+    error: null,
+    result: null
+  };
+
+  jsonResponse.inputfile = files.filetoupload;
+  if (files.filetoupload.type != "video/mp4" && files.filetoupload.type != "audio/x-m4a") {
+    jsonResponse.error = "Invalid file format. Supported formats : .mp4, .m4a"
+    res.status(415); // unsupported media type
+  }
+  else if (files.filetoupload.size < 100) {
+    jsonResponse.error = "File too small. Min size supported : 100 bytes"
+    res.status(204); // no content
+  }
+  else if (files.filetoupload.size > 104857600) {
+    jsonResponse.error = "File too large. Max size supported : 100 MB"
+    res.status(413); // payload too large
+  }
+  else {
+    var oldpath = files.filetoupload.path;
+    var newpath = path.join(resourcepath, files.filetoupload.name);
+    console.log(`A new file is uploaded and saved in ${newpath}`);
+    mv(oldpath, newpath, (err) => {
+      if (err) next(err);
+    });
+    jsonResponse.status = "Your file is uploaded and being processed!";
+    res.status(202) // accepted
+  }
+
+  delete jsonResponse.inputfile.path;
+  res.send(JSON.stringify(jsonResponse, null, 4));
+  res.end();
+}
