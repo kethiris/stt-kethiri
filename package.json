@@ -19,8 +19,11 @@
   },
   "homepage": "https://github.com/kth012/stt-kethiri#readme",
   "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.0.20",
     "express": "^4.17.1",
+    "fluent-ffmpeg": "^2.1.2",
     "formidable": "^1.2.2",
+    "ibm-watson": "^6.1.1",
     "mv": "^2.1.1"
   }
 }
