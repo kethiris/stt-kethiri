@@ -7,6 +7,8 @@ const fs = require('fs');
 const path = require('path');
 const mv = require('mv');
 
+var transcriber = require("./transcriber");
+
 // create resouce folder to save the m4a files in the server
 const resourcepath = path.join(__dirname, 'resources');
 fs.mkdirSync(resourcepath, { recursive: true });
@@ -36,16 +38,21 @@ router.get('/*', (req, res) => {
 })
 
 app.use('/', router);
-app.listen(process.env.PORT || 8080, () => {
+app.listen(process.env.PORT || 5000, () => {
   console.log(`Server started on ${process.env.PORT}`);
 })
 
-// 
+/**
+ * Validates and process the uploaded file
+ * @param  {formidable.Files} files  Uploaded file object
+ * @param  {Express.Response} res HTTP response object 
+ * @param  {Express.next} next Error handling middleware from Express module.
+ * @return NONE
+ */
 function processFile(files, res, next) {
   res.header("Content-Type", 'application/json');
   var jsonResponse = {
     inputfile: null,
-    status: null,
     error: null,
     result: null
   };
@@ -64,17 +71,21 @@ function processFile(files, res, next) {
     res.status(413); // payload too large
   }
   else {
-    var oldpath = files.filetoupload.path;
-    var newpath = path.join(resourcepath, files.filetoupload.name);
-    console.log(`A new file is uploaded and saved in ${newpath}`);
-    mv(oldpath, newpath, (err) => {
+    var oldPath = files.filetoupload.path;
+    var newPath = path.join(resourcepath, files.filetoupload.name);
+    console.log(`A new file is uploaded and saved in ${newPath}`);
+    mv(oldPath, newPath, (err) => {
       if (err) next(err);
     });
-    jsonResponse.status = "Your file is uploaded and being processed!";
     res.status(202) // accepted
+    var convertedFilePath = path.join(resourcepath,path.parse(newPath).name+".wav");
+    transcriber.convertToWAV(newPath, convertedFilePath, jsonResponse,res, (convertedFilePath,jsonResponse,res) =>
+    {
+      transcriber.transcribe(convertedFilePath,jsonResponse,res);
+    });
+    return;
   }
 
-  delete jsonResponse.inputfile.path;
+  if (jsonResponse.inputfile) delete jsonResponse.inputfile.path;
   res.send(JSON.stringify(jsonResponse, null, 4));
-  res.end();
 }
