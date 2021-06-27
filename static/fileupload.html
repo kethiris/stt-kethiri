@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            max-width: 100%;
+        }
+
+        input[type=text],
+        input[type=password],
+        input[type=file],
+        select,
+        h1,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: vertical;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        label {
+            padding: 12px 12px 12px 0;
+            display: inline-block;
+            margin-left: 20px;
+        }
+
+        input[type=submit] {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            width: 30%;
+            margin: auto;
+        }
+
+        input[type=submit]:hover {
+            background-color: #45a049;
+        }
+
+        .container {
+            width: 60%;
+            margin-top: 15%;
+            border-radius: 5px;
+            background-color: #f2f2f2;
+            padding: 20px;
+        }
+
+        .topnav {
+            overflow: hidden;
+            background-color: #333;
+        }
+
+        .topnav form {
+            float: right;
+            color: #f2f2f2;
+            text-align: center;
+            padding: 4px 4px;
+            text-decoration: none;
+            font-size: 17px;
+            width: 30%;
+        }
+        .topnav form input {
+            margin-right: 0px;
+            float: right;
+        }
+
+        .col-25 {
+            float: left;
+            width: 25%;
+            margin-top: 6px;
+        }
+
+        .col-75 {
+            float: left;
+            width: 75%;
+            margin-top: 6px;
+        }
+
+        /* Clear floats after the columns */
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        /* Responsive layout - when the screen is less than 600px wide, make the two columns stack on top of each other instead of next to each other */
+        @media screen and (max-width: 600px) {
+
+            .col-25,
+            .col-75,
+            input[type=submit] {
+                width: 100%;
+                margin-top: 0;
+            }
+        }
+    </style>
+    <title>File Upload Form</title>
+</head>
+
+<body>
+    <div class="topnav">
+        <form action="logout" method="post" enctype="multipart/form-data">
+                <input type="submit" name="logout" value="Logout" />
+        </form>
+    </div>
+    <div class="container">
+        <h1>Welcome to STT Transcriber</h1>
+        <form action="fileupload" method="post" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-25">
+                    <label for="filetoupload">Upload File</label>
+                </div>
+                <div class="col-75">
+                    <input type="file" name="filetoupload" required>
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <input type="submit" value="submit">
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>
