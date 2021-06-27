@@ -21,15 +21,20 @@ const speechToText = new SpeechToTextV1({
  * @param  {JSON} jsonResponse JSON response to be sent back to browser
  * @param  {Express.Response} res HTTP response object 
  * @param  {INT} userID user_id of who initiated the request
- * @param  {Function} finish Callback function to be fired upon successful conversion.
+ * @param  {Function} success Callback function to be fired upon successful conversion.
+ * @param  {Function} end Callback function to be fired to deliver the HTTP response.
  * @return NONE
  */
-function convertToWAV(srcFile, destFile, jsonResponse, res, userID, finish) {
+function convertToWAV(srcFile, destFile, jsonResponse, res, userID, success, end) {
     console.log(`${srcFile} is being converted`);
     ffmpeg(srcFile)
         .on('error', (err) => {
-            console.log('An error occurred: ' + err.message);
-            jsonResponse.error = err;
+            console.log('An error occurred during ffmpeg conversion: ' + err.message);
+            jsonResponse.error = "Internal Server Error";
+            res.status(500);
+            if (success) success(srcFile, destFile, jsonResponse, res, userID, end);
+            // end(res,jsonResponse);
+            // res.send(JSON.stringify(jsonResponse, null, 4));
         })
         .on('progress', (progress) => {
             console.log(`Converting file : ${srcFile} | ` + progress.targetSize + ' KB converted');
@@ -37,7 +42,7 @@ function convertToWAV(srcFile, destFile, jsonResponse, res, userID, finish) {
         .on('end', () => {
             console.log(`${srcFile} have been successfully converted!`);
             console.log(`Converted file ${destFile} has been successfully saved!`);
-            if (finish) finish(srcFile, destFile, jsonResponse, res, userID);
+            if (success) success(srcFile, destFile, jsonResponse, res, userID, end);
         })
         .save(destFile);
 }
@@ -48,32 +53,31 @@ function convertToWAV(srcFile, destFile, jsonResponse, res, userID, finish) {
  * @param  {JSON} jsonResponse JSON response to be sent back to browser
  * @param  {Express.Response} res HTTP response object
  * @param  {INT} jobID  Associated job_id of the transcription request
- * @param  {Function} success Callback function to be fired upon successful transcription.
+ * @param  {Function} success Callback function to be fired upon transcription completion.
+ * @param  {Function} end Callback function to be fired to deliver the HTTP response.
  * @return NONE
  */
-function transcribe(file, jsonResponse, res, jobID, success) {
+function transcribe(file, jsonResponse, res, jobID, success, end) {
     console.log(`${file} is being transcribed`);
     const recognizeParams = {
         audio: fs.createReadStream(file),
         contentType: 'audio/wav',
         model: 'en-US_BroadbandModel',
     };
-
+    var returnCode = 500;
+    var result ={}
     speechToText.recognize(recognizeParams)
         .then(speechRecognitionResults => {
             console.log("Response received from STT service :");
             console.log(JSON.stringify(speechRecognitionResults, null, 2));
             jsonResponse.result = speechRecognitionResults.result.results;
             res.status(speechRecognitionResults.status);
-            res.send(JSON.stringify(jsonResponse, null, 4));
-            success(jobID,speechRecognitionResults.result);
         })
         .catch(err => {
             console.log('An error has been returned from STT service: \n', err);
             jsonResponse.result = null;
             jsonResponse.error = "Internal Server Error";
-            res.status(500);
-            res.send(JSON.stringify(jsonResponse, null, 4));
+            res.status(err.code);
         })
         .finally(() => {
             fs.rm(file, (err) => {
@@ -83,5 +87,7 @@ function transcribe(file, jsonResponse, res, jobID, success) {
                 }
                 console.log(`${file} has been deleted successfully`);
             });
+            success(res, jsonResponse,jobID, end);
         })
 }
+
