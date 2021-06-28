@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include('head'); %>
+</head>
+
+<body>
+    <div class="topnav">
+        <form action="logout" method="post" enctype="multipart/form-data">
+                <input type="submit" name="logout" value="Logout" />
+        </form>
+        <form action="fileupload" method="get" enctype="multipart/form-data">
+                <input type="submit" name="transcribe" value="Transcript another" />
+        </form>
+    </div>
+    <h1> Speech to Text Service Output </h1>
+    <%- include('result'); %>
+</body>
+
+</html>
