@@ -17,6 +17,7 @@ module.exports = function (router) {
     // parse the upload form
     router.post('/fileupload', (req, res, next) => {
         console.log('POST on /fileupload');
+        req.connection.setTimeout(20 * 60 * 1000); //set request timeout to 20 minutes
         var form = new formidable.IncomingForm();
         form.parse(req, function (err, fields, files) {
             if (err) next(err);
