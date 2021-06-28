@@ -35,6 +35,8 @@ function register(req, res, finish) {
                 .catch(err => {
                     console.error("An error occured during executing a DB query :\n", err);
                     jsonResponse.error = "Internal System Error";
+                    if (err.code == 23505)
+                        jsonResponse.error = "Username not available";
                     res.status(500);
                     finish(res, jsonResponse);
                 })
@@ -99,7 +101,7 @@ function authenticate(req, res, success, redirect) {
         if (error instanceof TypeError)
             verifycredentials(req, res, success, redirect);
         else {
-            console.log(error);
+            console.error("An error occured during authentication \n"+ error);
             var jsonResponse = { "message": null };
             jsonResponse.error = "Forbidden request";
             res.status(403);
@@ -116,6 +118,7 @@ function verifycredentials(req, res, success, redirect) {
     var jsonResponse = { "message": null };
     if (username == null || password == null) {
         jsonResponse.error = "Forbidden request";
+        res.status(403);
         redirect(res, jsonResponse);
         return;
     }
@@ -126,6 +129,14 @@ function verifycredentials(req, res, success, redirect) {
     dbhandler.executeQuery(query)
         .then(result => {
             console.log(result);
+            if (result.rows.length==0)
+            {
+                console.log(`username ${username} not found in database`);
+                res.status(403);
+                jsonResponse.message = "Invalid credentials"
+                redirect(res,jsonResponse);
+                return;
+            }
             var userID = result.rows[0].user_id;
             var retrievedPassword = result.rows[0].password;
             var userStatus = result.rows[0].status;
@@ -135,6 +146,7 @@ function verifycredentials(req, res, success, redirect) {
                         if (userStatus == "Active") {
                             console.log(`user ${userID} successfully authenticated`);
                             currentSession.user_id = userID;
+                            res.status(200);
                             success(res);
                         }
                         else if (userStatus == "Suspended") {
@@ -149,6 +161,7 @@ function verifycredentials(req, res, success, redirect) {
                         res.status(401);
                         jsonResponse.message = "Invalid credentials"
                         redirect(res,jsonResponse);
+                        return
                     }
                 })
                 .catch(err => {

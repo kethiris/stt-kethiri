@@ -21,7 +21,7 @@ module.exports = function (router) {
         var form = new formidable.IncomingForm();
         form.parse(req, function (err, fields, files) {
             if (err) next(err);
-            requestHandler.processFile(files, req, res, next, onResponse);
+            requestHandler.processFile(files, req, res, next, onTranscriptionResponse);
         });
     });
 
@@ -56,6 +56,13 @@ module.exports = function (router) {
         authenticator.register(req, res, onRegisterResponse);
     });
 
+    router.get('/result', (req, res) => {
+        console.log('GET on /result');
+        req.body.username = req.query.username
+        req.body.password = req.query.password;
+        authenticator.authenticate(req, res, onResultRequest, onLoginRedirectRequest);
+    })
+
     router.get('/*', (req, res) => {
         res.redirect('/login');
     })
@@ -73,11 +80,11 @@ function onFileUploadFormRequest(res)
 
 function onLoginRedirectRequest(res,jsonResponse)
 {
-    if (res.status == 500){
+    if (res.statusCode == 500){
         console.error("Internal Server Error : \n"+ JSON.stringify(jsonResponse, null, 4))
         res.render('login', {jsonresponse : jsonResponse});
     }
-    else if(res.status = 403) {
+    else if(res.statusCode = 403) {
         console.error("Authentication Error : \n"+ JSON.stringify(jsonResponse, null, 4))
         res.render('login', {jsonresponse : jsonResponse});
     }
@@ -96,10 +103,20 @@ function onLoginFormRequest(res)
     res.sendFile(path.join(__dirname ,'..','static','login.html'));  
 }
 
-
-function onResponse(res, jsonResponse)
+function onTranscriptionResponse(res, jsonResponse)
 {
     console.log("Job completed : \n"+ JSON.stringify(jsonResponse, null, 4));
+    res.render('index', {jsonresponse : jsonResponse});
+}
+
+function onResultRequest(res)
+{
+    requestHandler.processResultRequest(res, onResultResponse);
+}
+
+function onResultResponse(res, jsonResponse)
+{
+    console.log(`Result query completed for user: ${res.req.session.user_id} \n`);
     res.render('index', {jsonresponse : jsonResponse});
 }
 

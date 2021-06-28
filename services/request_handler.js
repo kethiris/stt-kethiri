@@ -75,7 +75,7 @@ function onConversionSuccess(srcFile, convertedFile, jsonResponse, res, userID, 
     try {
         const query = {
             text: 'INSERT INTO jobs(user_id, file_name, file_path,status) VALUES($1, $2, $3, $4) RETURNING job_id;',
-            values: [userID, path.parse(srcFile).name, srcFile, 'Not Started']
+            values: [userID, path.parse(srcFile).base, srcFile, 'Not Started']
         }
         dbhandler.executeQuery(query)
             .then(result => {
@@ -108,7 +108,7 @@ function onTranscriptionComplete(res, jsonResponse, jobID, end) {
     try {
         const query = {
             text: 'UPDATE jobs SET status = $1,  transcript = $2 WHERE job_id = $3',
-            values: [(res.status == 200) ? 'Success' : 'Failed', jsonResponse, jobID]
+            values: [(res.statusCode == 200) ? 'Success' : 'Failed', jsonResponse, jobID]
         }
         dbhandler.executeQuery(query)
             .then(result => {
@@ -123,3 +123,34 @@ function onTranscriptionComplete(res, jsonResponse, jobID, end) {
         console.error("An error occured during transcription", err);
     }
 }
+
+function processResultRequest(res,finish)
+{
+    var jsonResponse = {};
+    if (!res.req.session.user_id)
+    {
+        res.status(403);
+        finish(res,jsonResponse);
+        return;
+    }
+
+    const query = {
+        text: 'SELECT file_name, status, transcript FROM jobs WHERE user_id = $1;',
+        values: [res.req.session.user_id]
+    }
+    dbhandler.executeQuery(query)
+        .then(result => {
+            console.log(result);
+            res.status(200);
+            jsonResponse = result.rows;
+        })
+        .catch(err => {
+            console.error("An error occured during executing a DB query :\n", err);
+            res.status(500);
+        })
+        .finally(() => {
+            finish(res,jsonResponse);
+        })
+}
+
+module.exports.processResultRequest = processResultRequest

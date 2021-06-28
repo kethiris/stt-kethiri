@@ -62,6 +62,17 @@
             background-color: #333;
         }
 
+        .topnav h1 {
+            float: left;
+            color: #f2f2f2;
+            text-align: left;
+            padding: 4px 4px;
+            text-decoration: none;
+            width: auto;
+            border: none;
+        }
+
+
         .topnav form {
             float: right;
             color: #f2f2f2;
@@ -69,11 +80,11 @@
             padding: 4px 4px;
             text-decoration: none;
             font-size: 17px;
-            width: 30%;
+            width: auto;
         }
+
         .topnav form input {
-            margin-right: 0px;
-            float: right;
+            width: 100%;
         }
 
         .col-25 {
@@ -111,8 +122,12 @@
 
 <body>
     <div class="topnav">
+        <h1>STT Service</h1>
         <form action="logout" method="post" enctype="multipart/form-data">
-                <input type="submit" name="logout" value="Logout" />
+            <input type="submit" name="logout" value="Logout" />
+        </form>
+        <form action="result" method="get" enctype="multipart/form-data">
+            <input type="submit" name="results" value="Results" />
         </form>
     </div>
     <div class="container">
