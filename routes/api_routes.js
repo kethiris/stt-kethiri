@@ -27,7 +27,7 @@ module.exports = function (router) {
 
     router.get('/login', (req, res) => {
         console.log('GET on /login');
-        res.sendFile(path.join(__dirname ,'..','static','login.html'));
+        authenticator.authenticate(req, res, onFileUploadRedirectRequest, onLoginFormRequest);
     })
 
     router.post('/login', (req, res) => {
@@ -75,19 +75,27 @@ function onLoginRedirectRequest(res,jsonResponse)
 {
     if (res.status == 500){
         console.error("Internal Server Error : \n"+ JSON.stringify(jsonResponse, null, 4))
-        res.redirect('/login');
+        res.render('login', {jsonresponse : jsonResponse});
     }
-    else {
+    else if(res.status = 403) {
         console.error("Authentication Error : \n"+ JSON.stringify(jsonResponse, null, 4))
         res.render('login', {jsonresponse : jsonResponse});
     }
-        
+    else {
+        onLoginFormRequest(res);
+    }
 }
 
 function onRegisterFormRequest(res)
 {
     res.sendFile(path.join(__dirname ,'..','static','register.html'));  
 }
+
+function onLoginFormRequest(res)
+{
+    res.sendFile(path.join(__dirname ,'..','static','login.html'));  
+}
+
 
 function onResponse(res, jsonResponse)
 {

@@ -87,7 +87,6 @@ function onConversionSuccess(srcFile, convertedFile, jsonResponse, res, userID, 
                 console.error("An error occured during executing a DB query :\n", err);
                 jsonResponse.error = "Internal System Error";
                 end(res, jsonResponse);
-                // res.send(JSON.stringify(jsonResponse, null, 4));
             })
     }
     catch (err) {
