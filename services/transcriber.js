@@ -29,7 +29,7 @@ function convertToWAV(srcFile, destFile, jsonResponse, res, userID, success, end
     console.log(`${srcFile} is being converted`);
     ffmpeg(srcFile)
         .on('error', (err) => {
-            console.log('An error occurred during ffmpeg conversion: ' + err.message);
+            console.error('An error occurred during ffmpeg conversion: ' + err.message);
             jsonResponse.error = "Internal Server Error";
             res.status(500);
             if (end) end(res,jsonResponse);
@@ -62,20 +62,18 @@ function transcribe(file, jsonResponse, res, jobID, success, end) {
         contentType: 'audio/wav',
         model: 'en-US_BroadbandModel',
     };
-    var returnCode = 500;
-    var result ={}
     speechToText.recognize(recognizeParams)
         .then(speechRecognitionResults => {
             console.log("Response received from STT service :");
             console.log(JSON.stringify(speechRecognitionResults, null, 2));
             jsonResponse.result = speechRecognitionResults.result.results;
-            res.status(speechRecognitionResults.status);
+            res.status(200);
         })
         .catch(err => {
-            console.log('An error has been returned from STT service: \n', err);
+            console.error('An error has been returned from STT service: \n', err);
             jsonResponse.result = null;
             jsonResponse.error = "Internal Server Error";
-            res.status(err.code);
+            res.status(500);
         })
         .finally(() => {
             fs.rm(file, (err) => {
