@@ -32,9 +32,7 @@ function convertToWAV(srcFile, destFile, jsonResponse, res, userID, success, end
             console.log('An error occurred during ffmpeg conversion: ' + err.message);
             jsonResponse.error = "Internal Server Error";
             res.status(500);
-            if (success) success(srcFile, destFile, jsonResponse, res, userID, end);
-            // end(res,jsonResponse);
-            // res.send(JSON.stringify(jsonResponse, null, 4));
+            if (end) end(res,jsonResponse);
         })
         .on('progress', (progress) => {
             console.log(`Converting file : ${srcFile} | ` + progress.targetSize + ' KB converted');
