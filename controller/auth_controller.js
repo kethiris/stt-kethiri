@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 var dbhandler = require("./db_controller");
+const { json } = require('body-parser');
 const saltRounds = 10;
 
 /**
@@ -50,16 +51,19 @@ function register(req, res, finish) {
  * Logouts the user and clear session
  * @param  {Express.Request} req HTTP request object 
  * @param  {Express.Response} res HTTP response object
- * @param  {Function} success Callback function to deliver the HTTP response.
+ * @param  {Function} finish Callback function to deliver the HTTP response.
  * @return NONE
  */
-function logout(req, res, success) {
+function logout(req, res, finish) {
+    var jsonResponse = { "message": null ,"error": null};
     try {
         var currentSession = req.session;
         if (currentSession.user_id) {
             console.log(`User ${currentSession.user_id} is being logged out.`)
             req.session.destroy();
-            success(res);
+            res.status(200);
+            jsonResponse.message = "Successfully logged out";
+            finish(res,jsonResponse);
         }
         else {
             throw TypeError("user_id is not defined");
@@ -67,10 +71,9 @@ function logout(req, res, success) {
     }
     catch (error) {
         console.log(error);
-        var jsonResponse = { "message": null };
         jsonResponse.error = "Forbidden request";
         res.status(403);
-        res.send(JSON.stringify(jsonResponse, null, 4));
+        finish(res,jsonResponse);
     }
 }
 
@@ -101,7 +104,6 @@ function authenticate(req, res, success, redirect) {
             jsonResponse.error = "Forbidden request";
             res.status(403);
             redirect(res, jsonResponse);
-            // res.send(JSON.stringify(jsonResponse, null, 4));
         }
     }
 }
@@ -140,7 +142,6 @@ function verifycredentials(req, res, success, redirect) {
                             res.status(401);
                             jsonResponse.message = "User suspended";
                             redirect(res,jsonResponse);
-                            // res.send(JSON.stringify(jsonResponse, null, 4));
                         }
                     }
                     else {
@@ -148,7 +149,6 @@ function verifycredentials(req, res, success, redirect) {
                         res.status(401);
                         jsonResponse.message = "Invalid credentials"
                         redirect(res,jsonResponse);
-                        // res.send(JSON.stringify(jsonResponse, null, 4));
                     }
                 })
                 .catch(err => {
@@ -156,7 +156,6 @@ function verifycredentials(req, res, success, redirect) {
                     jsonResponse.error = "Internal System Error";
                     res.status(500);
                     redirect(res,jsonResponse);
-                    // res.send(JSON.stringify(jsonResponse, null, 4));
                 })
 
         })
@@ -165,7 +164,6 @@ function verifycredentials(req, res, success, redirect) {
             jsonResponse.error = "Internal System Error";
             res.status(500);
             redirect(res,jsonResponse);
-            // res.send(JSON.stringify(jsonResponse, null, 4));
         })
 }
 
