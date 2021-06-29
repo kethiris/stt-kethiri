@@ -53,9 +53,9 @@ function processFile(files, req, res, next, end) {
             console.log(`A new file is uploaded and saved in ${newPath}`);
             mv(oldPath, newPath, (err) => { console.error(err) });
             res.status(202) // accepted
-            var convertedFilePath = path.join(resourcepath, path.parse(newPath).name + ".wav");
+            var convertedFilePath = path.join(resourcepath, path.parse(newPath).name + ".flac");
             var userID = req.session.user_id;
-            transcriber.convertToWAV(newPath, convertedFilePath, jsonResponse, res, userID, onConversionSuccess, end);
+            transcriber.convertToFLAC(newPath, convertedFilePath, jsonResponse, res, userID, onConversionSuccess, end);
             return;
         }
         end(res, jsonResponse);
@@ -70,7 +70,7 @@ function processFile(files, req, res, next, end) {
 module.exports.processFile = processFile;
 
 /**
- * Callback function which will be fired once the file is successfully converted to wav
+ * Callback function which will be fired once the file is successfully converted to flac
  * @param  {String} srcFile  original file path
  * @param  {String} convertedFile converted file path
  * @param  {JSON} jsonResponse Response to be sent back to the browser
