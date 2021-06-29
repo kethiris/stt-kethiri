@@ -32,7 +32,7 @@ function processFile(files, req, res, next, end) {
         result: null
     };
     jsonResponse.inputfile = files.filetoupload.name;
-    var supportedFileTypes = ["video/mp4","audio/x-m4a","audio/mp4"]
+    var supportedFileTypes = ["video/mp4","audio/x-m4a","audio/mp4","audio/mpeg","video/mpeg"]
 
     try {
         if (supportedFileTypes.includes(files.filetoupload.type) == false) {
