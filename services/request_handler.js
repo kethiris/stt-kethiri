@@ -8,6 +8,14 @@ var dbhandler = require("../controller/db_controller");
 
 const resourcepath = path.join(__dirname, '..', 'resources');
 
+module.exports.processFileUpload = function(req,res,next,end){
+    var form = new formidable.IncomingForm();
+    form.parse(req, function (err, fields, files) {
+        if (err) next(err);
+        else processFile(files, req, res, next, end);
+    });
+}
+
 /**
  * Validates and process the uploaded file
  * @param  {formidable.Files} files  Uploaded file object
@@ -23,10 +31,12 @@ function processFile(files, req, res, next, end) {
         error: null,
         result: null
     };
+    jsonResponse.inputfile = files.filetoupload.name;
+    var supportedFileTypes = ["video/mp4","audio/x-m4a","audio/mp4","audio/mpeg","video/mpeg"]
+
     try {
-        jsonResponse.inputfile = files.filetoupload;
-        if (files.filetoupload.type != "video/mp4" && files.filetoupload.type != "audio/x-m4a" && files.filetoupload.type != "audio/mp4") {
-            jsonResponse.error = "Invalid file format. Supported formats : .mp4, .m4a"
+        if (supportedFileTypes.includes(files.filetoupload.type) == false) {
+            jsonResponse.error = "Unsupported file format. Supported formats : .mp4, .m4a"
             res.status(415); // unsupported media type
         }
         else if (files.filetoupload.size < 100) {
@@ -48,12 +58,10 @@ function processFile(files, req, res, next, end) {
             transcriber.convertToWAV(newPath, convertedFilePath, jsonResponse, res, userID, onConversionSuccess, end);
             return;
         }
-        if (jsonResponse.inputfile) delete jsonResponse.inputfile.path;
         end(res, jsonResponse);
     }
     catch (err) {
         console.error(`An error occured while processing the file ${files.filetoupload.path}` + err);
-        if (jsonResponse.inputfile) delete jsonResponse.inputfile.path;
         jsonResponse.error = "Internal System Error";
         end(res, jsonResponse);
     }
