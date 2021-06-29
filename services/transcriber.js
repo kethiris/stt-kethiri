@@ -2,7 +2,7 @@ const fs = require('fs');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
 ffmpeg.setFfmpegPath(ffmpegPath);
-module.exports = { convertToWAV, transcribe };
+module.exports = { convertToFLAC, transcribe };
 
 const SpeechToTextV1 = require('ibm-watson/speech-to-text/v1');
 const { IamAuthenticator } = require('ibm-watson/auth');
@@ -15,9 +15,9 @@ const speechToText = new SpeechToTextV1({
 });
 
 /**
- * Converts .mp4 and .m4a files to .wav
+ * Converts .mp4 and .m4a files to .flac
  * @param  {String} srcFile  path of the source .m4a or .mp4 file
- * @param  {String} destFile path to the destination .wav file
+ * @param  {String} destFile path to the destination .flac file
  * @param  {JSON} jsonResponse JSON response to be sent back to browser
  * @param  {Express.Response} res HTTP response object 
  * @param  {INT} userID user_id of who initiated the request
@@ -25,7 +25,7 @@ const speechToText = new SpeechToTextV1({
  * @param  {Function} end Callback function to be fired to deliver the HTTP response.
  * @return NONE
  */
-function convertToWAV(srcFile, destFile, jsonResponse, res, userID, success, end) {
+function convertToFLAC(srcFile, destFile, jsonResponse, res, userID, success, end) {
     console.log(`${srcFile} is being converted`);
     ffmpeg(srcFile)
         .on('error', (err) => {
@@ -47,7 +47,7 @@ function convertToWAV(srcFile, destFile, jsonResponse, res, userID, success, end
 
 /**
  * Connect to Watson STT service and transcribe the input file 
- * @param  {String} file  path of the source .wav file to be transcribed
+ * @param  {String} file  path of the source .flac file to be transcribed
  * @param  {JSON} jsonResponse JSON response to be sent back to browser
  * @param  {Express.Response} res HTTP response object
  * @param  {INT} jobID  Associated job_id of the transcription request
@@ -59,8 +59,15 @@ function transcribe(file, jsonResponse, res, jobID, success, end) {
     console.log(`${file} is being transcribed`);
     const recognizeParams = {
         audio: fs.createReadStream(file),
-        contentType: 'audio/wav',
-        model: 'en-US_BroadbandModel',
+        objectMode: true,
+        contentType: 'audio/flac',
+        model: 'en-US_Telephony',
+        lowLatency: false,
+
+        // Enable following params when implementing model selection
+        // backgroundAudioSuppression: 0.3,
+        // speakerLabels: true,
+        // redaction: true,
     };
     speechToText.recognize(recognizeParams)
         .then(speechRecognitionResults => {
