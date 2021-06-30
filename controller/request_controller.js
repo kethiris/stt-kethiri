@@ -51,12 +51,21 @@ function processFile(files, req, res, next, end) {
             var oldPath = files.filetoupload.path;
             var newPath = path.join(resourcepath, files.filetoupload.name);
             console.log(`A new file is uploaded and saved in ${newPath}`);
-            mv(oldPath, newPath, (err) => { console.error(err) });
-            res.status(202) // accepted
-            var convertedFilePath = path.join(resourcepath, path.parse(newPath).name + ".flac");
-            var userID = req.session.user_id;
-            transcriber.convertToFLAC(newPath, convertedFilePath, jsonResponse, res, userID, onConversionSuccess, end);
-            return;
+            mv(oldPath, newPath, (err) => {
+                if (err)
+                {
+                    console.error(err);
+                    jsonResponse.error = "Internal Server Error";
+                    res.status(500);
+                    end(res, jsonResponse);                   
+                    return;
+                }
+                var convertedFilePath = path.join(resourcepath, path.parse(newPath).name + ".flac");
+                var userID = req.session.user_id;
+                transcriber.convertToFLAC(newPath, convertedFilePath, jsonResponse, res, userID, onConversionSuccess, end);
+                res.status(202) // accepted
+            });
+            return; 
         }
         end(res, jsonResponse);
     }
