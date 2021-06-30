@@ -1,5 +1,5 @@
 const formidable = require('formidable');
-const requestHandler = require("../services/request_handler")
+const requestHandler = require("../controller/request_controller")
 const authenticator = require("../controller/auth_controller")
 const path = require("path")
 

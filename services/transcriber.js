@@ -1,7 +1,5 @@
 const fs = require('fs');
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
-ffmpeg.setFfmpegPath(ffmpegPath);
 module.exports = { convertToFLAC, transcribe };
 
 const SpeechToTextV1 = require('ibm-watson/speech-to-text/v1');

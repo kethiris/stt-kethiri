@@ -3,8 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const mv = require('mv');
 
-var transcriber = require("./transcriber");
-var dbhandler = require("../controller/db_controller");
+var transcriber = require("../services/transcriber");
+var dbhandler = require("./db_controller");
 
 const resourcepath = path.join(__dirname, '..', 'resources');
 
@@ -36,7 +36,7 @@ function processFile(files, req, res, next, end) {
 
     try {
         if (supportedFileTypes.includes(files.filetoupload.type) == false) {
-            jsonResponse.error = "Unsupported file format. Supported formats : .mp4, .m4a"
+            jsonResponse.error = "Unsupported file format. Supported formats : .mp4 | .m4a | .mp3"
             res.status(415); // unsupported media type
         }
         else if (files.filetoupload.size < 100) {
