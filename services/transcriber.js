@@ -69,8 +69,7 @@ function transcribe(file, jsonResponse, res, jobID, success, end) {
     };
     speechToText.recognize(recognizeParams)
         .then(speechRecognitionResults => {
-            console.log("Response received from STT service :");
-            console.log(JSON.stringify(speechRecognitionResults, null, 2));
+            console.log("Transcription complete and result is being posted");
             jsonResponse.result = speechRecognitionResults.result.results;
             res.status(200);
         })

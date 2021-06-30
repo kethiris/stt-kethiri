@@ -152,17 +152,18 @@ function processResultRequest(res,finish)
     }
 
     const query = {
-        text: 'SELECT file_name, status, transcript FROM jobs WHERE user_id = $1;',
+        text: 'SELECT file_name, status, transcript FROM jobs WHERE user_id = $1 ORDER BY job_id DESC;',
         values: [res.req.session.user_id]
     }
     dbhandler.executeQuery(query)
         .then(result => {
-            console.log(result);
+            console.log(`Results of user ${res.req.session.user_id} is retrieved and being posted`);
             res.status(200);
             jsonResponse = result.rows;
         })
         .catch(err => {
-            console.error("An error occured during executing a DB query :\n", err);
+            console.error(`An error occured during executing a DB query${JSON.stringify(query)}:\n`, err);
+            jsonResponse = {error: "Internal Server Error"};
             res.status(500);
         })
         .finally(() => {
